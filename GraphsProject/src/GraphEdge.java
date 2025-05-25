@@ -1,9 +1,7 @@
-public class Edge {
-	private Vertex beggining;
+public class GraphEdge {
 	private Vertex ending;
 	private double weight;
-	public Edge(Vertex beggining, Vertex ending, double weight) {
-		this.beggining = beggining;
+	public GraphEdge(Vertex ending, double weight) {
 		this.ending = ending;
 		this.weight = weight;
 	}
@@ -12,12 +10,6 @@ public class Edge {
 	}
 	public void setWeight(double weight) {
 		this.weight = weight;
-	}
-	public Vertex getBeggining() {
-		return beggining;
-	}
-	public void setBeggining(Vertex beggining) {
-		this.beggining = beggining;
 	}
 	public Vertex getEnding() {
 		return ending;

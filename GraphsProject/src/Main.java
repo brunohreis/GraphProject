@@ -5,7 +5,11 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element; // Importar Element
+
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 // import java.util.Iterator; // Iterator não é usado diretamente aqui
 import java.util.HashMap;
@@ -15,6 +19,11 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
+			
+			File f = new File("graphs/");
+			f.mkdir();
+			f = new File("graphs/vertices.txt");
+			
 			File xmlFile = new File("maps/pca_liberdade.osm");
 			HashMap<Long, DocNode> nodes = new HashMap<Long, DocNode>();
 			LinkedList<DocWay> ways = new LinkedList<DocWay>();
@@ -24,27 +33,29 @@ public class Main {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document document = builder.parse(xmlFile);
 			document.getDocumentElement().normalize();
-			
+
 			System.out.println("Fazendo processamento do grafo");
 			System.out.println("------------------------------------------------------------");
 
 			fillNodesFromDocument(nodes, document);
 			fillWaysFromDocument(nodes, ways, document);
-			
+
 			System.out.println("Processamento concluído");
 
 			graph = buildGraph(nodes, ways);
 			System.out.println("Vertices: " + graph.getvCount() + "\tEdges: " + graph.getEdgesCount());
+			
+			exportVerticesToFile(graph, "graphs/vertices.txt");
 
 		} catch (Exception e) {
-			e.printStackTrace(); // É uma boa prática imprimir o stack trace da exceção
+			e.printStackTrace(); 
 		}
 	}
 
 	private static Graph buildGraph(HashMap<Long, DocNode> nodesMap, LinkedList<DocWay> ways) {
 		Graph graph = new Graph();
 		for (int i = 0; i < ways.size(); i++) {
-			int percent = (int)(((double)i/ways.size()) * 100);
+			int percent = (int) (((double) i / ways.size()) * 100);
 			String bar = "=".repeat(percent / 2) + " ".repeat(50 - percent / 2);
 			System.out.print("\rbuildGraph: [" + bar + "] " + i + "/" + ways.size() + "=" + percent + "%");
 			System.out.flush();
@@ -68,14 +79,14 @@ public class Main {
 						graph.addVertex(newNode.getVertex());
 						if (way.getType() == WayType.ONE_WAY) {
 							// if the street is one_way, there will be only a direct edge
-							graph.addEdge(new Edge(oldNode.getVertex(), newNode.getVertex(), edgeWeight));
+							graph.addEdge(oldNode.getVertex(), new GraphEdge(newNode.getVertex(), edgeWeight));
 						} else if (way.getType() == WayType.ONE_WAY_REVERSED) {
 							// if the street is one_way_reversed, there will be only a reversed edge
-							graph.addEdge(new Edge(newNode.getVertex(), oldNode.getVertex(), edgeWeight));
+							graph.addEdge(newNode.getVertex(), new GraphEdge(oldNode.getVertex(), edgeWeight));
 						} else {
 							// if the street is both_ways, there will be antiparallel edges
-							graph.addEdge(new Edge(oldNode.getVertex(), newNode.getVertex(), edgeWeight));
-							graph.addEdge(new Edge(newNode.getVertex(), oldNode.getVertex(), edgeWeight));
+							graph.addEdge(oldNode.getVertex(), new GraphEdge(newNode.getVertex(), edgeWeight));
+							graph.addEdge(newNode.getVertex(), new GraphEdge(oldNode.getVertex(), edgeWeight));
 						}
 						oldNode = newNode;
 					}
@@ -101,9 +112,10 @@ public class Main {
 	private static void fillNodesFromDocument(HashMap<Long, DocNode> nodes, Document document) {
 		NodeList docNodes = document.getElementsByTagName("node");
 		for (int i = 0; i < docNodes.getLength(); i++) {
-			int percent = (int)(((double)i/docNodes.getLength()) * 100);
+			int percent = (int) (((double) i / docNodes.getLength()) * 100);
 			String bar = "=".repeat(percent / 2) + " ".repeat(50 - percent / 2);
-			System.out.print("\rfillNodesFromDocument: [" + bar + "] " + i + "/" + docNodes.getLength() + "=" + percent + "%");
+			System.out.print(
+					"\rfillNodesFromDocument: [" + bar + "] " + i + "/" + docNodes.getLength() + "=" + percent + "%");
 			System.out.flush();
 			Node node = docNodes.item(i);
 			if (node.getNodeType() == Node.ELEMENT_NODE) {
@@ -121,9 +133,10 @@ public class Main {
 			Document document) {
 		NodeList docWays = document.getElementsByTagName("way");
 		for (int i = 0; i < docWays.getLength(); i++) {
-			int percent = (int)(((double)i/docWays.getLength()) * 100);
+			int percent = (int) (((double) i / docWays.getLength()) * 100);
 			String bar = "=".repeat(percent / 2) + " ".repeat(50 - percent / 2);
-			System.out.print("\rfillWaysFromDocument: [" + bar + "] " + i + "/" + docWays.getLength() + "=" + percent + "%");
+			System.out.print(
+					"\rfillWaysFromDocument: [" + bar + "] " + i + "/" + docWays.getLength() + "=" + percent + "%");
 			System.out.flush();
 			Node way = docWays.item(i);
 			if (way.getNodeType() == Node.ELEMENT_NODE) {
@@ -155,7 +168,8 @@ public class Main {
 		System.out.println();
 	}
 
-	// Checks if a way must be taken into consideration according to its highway type
+	// Checks if a way must be taken into consideration according to its highway
+	// type
 	private static boolean isValid(String attribute) {
 		if (attribute.equals("footway") || attribute.equals("pedestrian") || attribute.equals("cycleway")
 				|| attribute.equals("path") || attribute.equals("track") || attribute.equals("steps"))
@@ -176,5 +190,17 @@ public class Main {
 			rv = WayType.ONE_WAY_REVERSED;
 		}
 		return rv;
+	}
+
+	public static void exportVerticesToFile(Graph graph, String filename) {
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
+			for (Vertex v : graph.getAdjacencyLists().keySet()) {
+				writer.write(v.getLatitude() + ", " + v.getLongitude());
+				writer.newLine();
+			}
+			System.out.println("Arquivo '" + filename + "' criado com sucesso.");
+		} catch (IOException e) {
+			System.err.println("Erro ao escrever no arquivo: " + e.getMessage());
+		}
 	}
 }
