@@ -15,7 +15,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
-			File xmlFile = new File("maps/bh/bh_filtered.osm");
+			File xmlFile = new File("/home/bruno/Desktop/graphs_project/maps/bh_filtered.osm");
 			HashMap<Long, DocNode> nodes = new HashMap<Long, DocNode>();
 			LinkedList<DocWay> ways = new LinkedList<DocWay>();
 			Graph graph = new Graph();
