@@ -7,6 +7,10 @@ public class Vertex {
 		this.lon = longitude;
 	}
 	
+	public Vertex() {
+		// TODO Auto-generated constructor stub
+	}
+
 	public double getLatitude() {
 		return lat;
 	}
@@ -21,6 +25,19 @@ public class Vertex {
 
 	public void setLongitude(double longitude) {
 		this.lon = longitude;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null || getClass() != obj.getClass()) return false;
+		Vertex other = (Vertex) obj;
+		return Double.compare(lat, other.lat) == 0 && Double.compare(lon, other.lon) == 0;
+	}
+
+	@Override
+	public int hashCode() {
+		return Double.hashCode(lat) * 31 + Double.hashCode(lon);
 	}
 	
 }
