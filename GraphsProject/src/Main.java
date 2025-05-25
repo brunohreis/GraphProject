@@ -15,7 +15,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
-			File xmlFile = new File("/home/bruno/Desktop/graphs_project/maps/bh_filtered.osm");
+			File xmlFile = new File("maps/pca_liberdade.osm");
 			HashMap<Long, DocNode> nodes = new HashMap<Long, DocNode>();
 			LinkedList<DocWay> ways = new LinkedList<DocWay>();
 			Graph graph = new Graph();
@@ -50,7 +50,7 @@ public class Main {
 			System.out.flush();
 			DocWay way = ways.get(i);
 			ArrayList<Long> wayNodes = way.getNodes();
-			if (wayNodes.size() > 0) {
+			if (wayNodes != null && wayNodes.size() > 0) {
 				DocNode oldNode = nodesMap.get(wayNodes.get(0));
 				DocNode newNode = null;
 				// The first node from a way is always a vertex in the graph
@@ -58,7 +58,7 @@ public class Main {
 				double edgeWeight = 0;
 				double lastLat = oldNode.getVertex().getLatitude();
 				double lastLon = oldNode.getVertex().getLongitude();
-				for (int j = 0; j < wayNodes.size(); j++) {
+				for (int j = 1; j < wayNodes.size(); j++) {
 					newNode = nodesMap.get(wayNodes.get(j));
 					edgeWeight += haversineDistance(lastLat, lastLon, newNode.getVertex().getLatitude(),
 							newNode.getVertex().getLongitude());
@@ -111,7 +111,7 @@ public class Main {
 				long id = Long.parseLong(nodeElement.getAttribute("id"));
 				double lat = Double.parseDouble(nodeElement.getAttribute("lat"));
 				double lon = Double.parseDouble(nodeElement.getAttribute("lon"));
-				nodes.put(id, new DocNode(new Vertex(id, lat, lon)));
+				nodes.put(id, new DocNode(id, new Vertex(lat, lon)));
 			}
 		}
 		System.out.println();

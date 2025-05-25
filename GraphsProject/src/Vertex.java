@@ -1,18 +1,12 @@
 
 public class Vertex {
-	private long id;
 	private double lat, lon;
 
-	public Vertex(long id, double latitude, double longitude) {
-		this.id = id;	
+	public Vertex(double latitude, double longitude) {
 		this.lat = latitude;
 		this.lon = longitude;
 	}
-
-	public long getId() {
-		return id;
-	}
-
+	
 	public double getLatitude() {
 		return lat;
 	}
