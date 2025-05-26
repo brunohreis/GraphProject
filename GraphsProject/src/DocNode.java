@@ -5,9 +5,9 @@ public class DocNode {
 	private long id;
 	Vertex vertex;
 	public DocNode(long id, Vertex vertex) {
-		ways = new ArrayList<Long>();
 		this.id = id;
 		this.vertex = vertex;
+		ways = new ArrayList<Long>();
 	}
 	public Vertex getVertex() {
 		return vertex;

@@ -1,13 +1,14 @@
 import java.util.ArrayList;
 
 public class DocWay {
-	private int id;
+	private long id;
 	ArrayList<Long> nodes;
 	WayType type;
 	
 	public DocWay(long id, WayType type) {
-		this.nodes = new ArrayList<Long>();
+		this.id = id;
 		this.type = type;
+		this.nodes = new ArrayList<Long>();
 	}
 
 	public ArrayList<Long> getNodes() {

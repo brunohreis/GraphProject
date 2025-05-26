@@ -34,9 +34,12 @@ public class Graph {
 	public void addEdge(Vertex beggining, GraphEdge GraphEdge) {
 		LinkedList<GraphEdge> neighbors = adjacencyLists.get(beggining);
 		if (neighbors == null) {
-			neighbors = new LinkedList<GraphEdge>();
-			adjacencyLists.put(beggining, neighbors);
+			neighbors = addVertex(beggining);
 		}
+		// Adds the ending vertex to the graph if it hasnt been added yet
+	    if (!adjacencyLists.containsKey(GraphEdge.getEnding())) {
+	        addVertex(GraphEdge.getEnding());
+	    }
 		neighbors.add(GraphEdge);
 	}
 	
@@ -53,10 +56,11 @@ public class Graph {
 		return null;
 	}
 
-	public void addVertex(Vertex vertex) {
+	public LinkedList<GraphEdge> addVertex(Vertex vertex) {
 		LinkedList<GraphEdge> adjList = new LinkedList<GraphEdge>();
 		adjacencyLists.put(vertex, adjList);
 		vCount++;
+		return adjList;
 	}
 
 	public int getEdgesCount() {
@@ -67,6 +71,15 @@ public class Graph {
 		}
 		return GraphEdgesCount;
 	}
+	
+	public Vertex findVertex(double lat, double lon) {
+	    for (Vertex v : adjacencyLists.keySet()) {
+	        if (Math.abs(v.getLatitude() - lat) < 1e-7 && Math.abs(v.getLongitude() - lon) < 1e-7) {
+	            return v;
+	        }
+	    }
+	    return null;
+	}
 
 	public LinkedList<Edge> getShortestPath(Vertex origin, Vertex destination) {
 		HashMap<Vertex, Double> dist = new HashMap<Vertex, Double>(vCount);
@@ -75,16 +88,20 @@ public class Graph {
 
 		djikstra(origin, destination, dist, pred, exp);
 		
+		if(dist.get(destination) == Double.MAX_VALUE) {
+			return null;
+		}
+		
 		LinkedList<Edge> path = new LinkedList<>();
 		Vertex current = destination;
 
 		while (current != null && !current.equals(origin)) {
 			Vertex prev = pred.get(current);
-			if (prev == null) break; // Sem caminho
+			if (prev == null) break; 
 
 			Edge edge = getEdge(prev, current);
 			if (edge != null) {
-				path.addFirst(edge); // Adiciona no início, para construir na ordem correta
+				path.addFirst(edge); 
 			}
 			current = prev;
 		}
@@ -109,26 +126,37 @@ public class Graph {
 		while(dist.get(destination) == Double.MAX_VALUE && counter < adjacencyLists.entrySet().size() - 1) {
 			double minWeight = Double.MAX_VALUE;
 			GraphEdge edge;
-			Vertex toBeAdded = new Vertex();
-			Vertex predecessor = new Vertex();
+			Vertex toBeAdded, predecessor;
+			toBeAdded = predecessor = null;
 			for(int i=0; i<exp.size(); i++) {
 				Vertex v = exp.get(i);
-				LinkedList<GraphEdge> neighbors = adjacencyLists.get(v); 
-				for(int j=0; j<neighbors.size(); j++){
-					edge = neighbors.get(j);
-					Vertex w = edge.getEnding();
-					if(!exp.contains(w) && ((dist.get(v) + edge.getWeight()) < minWeight)) {
-						// if the vertex w has not been explored yet, the GraphEdge remains to the cut
-						minWeight = dist.get(v) + edge.getWeight();
-						toBeAdded = w;
-						predecessor = v;
+				if(adjacencyLists.containsKey(v)) {
+					LinkedList<GraphEdge> neighbors = adjacencyLists.get(v); 
+					for(int j=0; j<neighbors.size(); j++){
+						edge = neighbors.get(j);
+						Vertex w = edge.getEnding();
+						if(!exp.contains(w) && ((dist.get(v) + edge.getWeight()) < minWeight)) {
+							// if the vertex w has not been explored yet, the GraphEdge remains to the cut
+							minWeight = dist.get(v) + edge.getWeight();
+							toBeAdded = w;
+							predecessor = v;
+						}
 					}
 				}
+				else {
+					System.out.println("Map doesnt have the key");
+				}
+				
 			}
-			dist.put(toBeAdded, minWeight);
-			pred.put(toBeAdded, predecessor);
-			exp.add(toBeAdded);
-			counter++;
+			if(toBeAdded != null) {
+				dist.put(toBeAdded, minWeight);
+				pred.put(toBeAdded, predecessor);
+				exp.add(toBeAdded);
+				counter++;
+			}
+			else {
+				break;
+			}
 		}		
 	}
 }

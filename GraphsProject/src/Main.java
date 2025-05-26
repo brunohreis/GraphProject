@@ -18,12 +18,7 @@ import java.util.LinkedList;
 public class Main {
 
 	public static void main(String[] args) {
-		try {
-			
-			File f = new File("graphs/");
-			f.mkdir();
-			f = new File("graphs/vertices.txt");
-			
+		try {	
 			File xmlFile = new File("maps/pca_liberdade.osm");
 			HashMap<Long, DocNode> nodes = new HashMap<Long, DocNode>();
 			LinkedList<DocWay> ways = new LinkedList<DocWay>();
@@ -45,7 +40,25 @@ public class Main {
 			graph = buildGraph(nodes, ways);
 			System.out.println("Vertices: " + graph.getvCount() + "\tEdges: " + graph.getEdgesCount());
 			
-			exportVerticesToFile(graph, "graphs/vertices.txt");
+			//exportVerticesToFile(graph, "graphs/vertices.txt");
+			
+			Vertex origin = graph.findVertex(-19.9255706, -43.9404899);
+			Vertex destination = graph.findVertex(-19.9211485, -43.9339815);
+			LinkedList<Edge> path = graph.getShortestPath(origin, destination);
+			if(path != null) {
+				double totalDistance = 0;
+				int pathCounter = 1;
+				for(Edge edge: path){
+					double curDistance = edge.getEdge().getWeight();
+					totalDistance += curDistance;
+					System.out.println("Edge number " + pathCounter + ": " + curDistance + " m.");
+				}
+				System.out.println("Total distance: " + totalDistance);
+			}
+			else {
+				System.out.println("There is no way between the chosen vertices.");
+			}
+			
 
 		} catch (Exception e) {
 			e.printStackTrace(); 
