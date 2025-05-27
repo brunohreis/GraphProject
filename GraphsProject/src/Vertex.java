@@ -27,6 +27,10 @@ public class Vertex {
 		this.lon = longitude;
 	}
 	
+	public String toString() {
+		return (getLatitude() + "," + getLongitude());
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) return true;

@@ -17,5 +17,8 @@ public class GraphEdge {
 	public void setEnding(Vertex ending) {
 		this.ending = ending;
 	}
+	public String toString() {
+		return ending.toString() + "," + weight;
+	}
 
 }

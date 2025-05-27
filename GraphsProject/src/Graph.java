@@ -1,3 +1,8 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -17,6 +22,54 @@ public class Graph {
 	Graph() {
 		adjacencyLists = new HashMap<Vertex, LinkedList<GraphEdge>>();
 		vCount = 0;
+	}
+	
+	public void writeGraphToFile(String filename) {
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
+			for (Vertex v : getAdjacencyLists().keySet()) {
+				writer.write(v.toString() + ";");
+				for(GraphEdge edge: adjacencyLists.get(v)) {
+					writer.write(edge.toString() + ";");
+				}
+				writer.newLine();
+			}
+			System.out.println("Arquivo '" + filename + "' criado com sucesso.");
+		} catch (IOException e) {
+			System.err.println("Erro ao escrever no arquivo: " + e.getMessage());
+		}
+	}
+	
+	public static Graph getGraphFromFile(String filename) {
+		Graph rv = new Graph();
+		try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+			String line = reader.readLine();
+			while(line != null) {
+				String[] vertices = line.split(";");
+				if(vertices.length > 0) {
+					String[] keyVertexStr = vertices[0].split(",");
+					if(keyVertexStr.length == 2) {
+						double lat = Double.parseDouble(keyVertexStr[0]);
+						double lon = Double.parseDouble(keyVertexStr[1]);
+						Vertex keyVertex = new Vertex(lat, lon);
+						rv.addVertex(keyVertex);
+						for(int i=1; i<vertices.length; i++) {
+							String[] vertexStr = vertices[i].split(",");
+							if(vertexStr.length == 3) {
+								lat = Double.parseDouble(vertexStr[0]);
+								lon = Double.parseDouble(vertexStr[1]);
+								Double weight = Double.parseDouble(vertexStr[2]);
+								rv.addEdge(keyVertex, new GraphEdge(new Vertex(lat, lon), weight));
+							}
+						}
+					}
+				}
+				line = reader.readLine();
+			}
+		} catch (IOException e) {
+			System.err.println("Erro ao ler o arquivo: " + e.getMessage());
+			return null;
+		}
+		return rv;
 	}
 	
 	public HashMap<Vertex, LinkedList<GraphEdge>> getAdjacencyLists(){

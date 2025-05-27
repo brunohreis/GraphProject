@@ -18,50 +18,63 @@ import java.util.LinkedList;
 public class Main {
 
 	public static void main(String[] args) {
-		try {	
-			File xmlFile = new File("maps/pca_liberdade.osm");
-			HashMap<Long, DocNode> nodes = new HashMap<Long, DocNode>();
-			LinkedList<DocWay> ways = new LinkedList<DocWay>();
+		try {
+			String gFilename = "graphs/graph.txt";
+			File graphFile = new File(gFilename);
 			Graph graph = new Graph();
+			if (graphFile.length() == 0) {
+				File xmlFile = new File("maps/pca_liberdade.osm");
+				HashMap<Long, DocNode> nodes = new HashMap<Long, DocNode>();
+				LinkedList<DocWay> ways = new LinkedList<DocWay>();
 
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document document = builder.parse(xmlFile);
-			document.getDocumentElement().normalize();
+				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder builder = factory.newDocumentBuilder();
+				Document document = builder.parse(xmlFile);
+				document.getDocumentElement().normalize();
 
-			System.out.println("Fazendo processamento do grafo");
-			System.out.println("------------------------------------------------------------");
+				System.out.println("Fazendo processamento do grafo a partir do mapa");
+				System.out.println("------------------------------------------------------------");
 
-			fillNodesFromDocument(nodes, document);
-			fillWaysFromDocument(nodes, ways, document);
+				fillNodesFromDocument(nodes, document);
+				fillWaysFromDocument(nodes, ways, document);
 
-			System.out.println("Processamento concluído");
+				System.out.println("Processamento concluído");
 
-			graph = buildGraph(nodes, ways);
-			System.out.println("Vertices: " + graph.getvCount() + "\tEdges: " + graph.getEdgesCount());
-			
-			//exportVerticesToFile(graph, "graphs/vertices.txt");
-			
-			Vertex origin = graph.findVertex(-19.9255706, -43.9404899);
-			Vertex destination = graph.findVertex(-19.9211485, -43.9339815);
-			LinkedList<Edge> path = graph.getShortestPath(origin, destination);
-			if(path != null) {
-				double totalDistance = 0;
-				int pathCounter = 1;
-				for(Edge edge: path){
-					double curDistance = edge.getEdge().getWeight();
-					totalDistance += curDistance;
-					System.out.println("Edge number " + pathCounter + ": " + curDistance + " m.");
+				graph = buildGraph(nodes, ways);
+				System.out.println("Vertices: " + graph.getvCount() + "\tEdges: " + graph.getEdgesCount());
+				graph.writeGraphToFile(gFilename);
+
+			} else {
+				System.out.println("Obtendo grafo a partir do arquivo " + gFilename);
+				graph = Graph.getGraphFromFile(gFilename);
+			}
+
+			// Vertex from line 103
+			Vertex origin = graph.findVertex(-19.9210274, -43.9472383); // -19.9210274, -43.9472383
+
+			// Vertex from line 142
+			Vertex destination = graph.findVertex(-19.9287298, -43.929959); // -19.9287298, -43.929959
+
+			if (origin != null && destination != null) {
+				LinkedList<Edge> path = graph.getShortestPath(origin, destination);
+				if (path != null) {
+					double totalDistance = 0;
+					int pathCounter = 1;
+					for (Edge edge : path) {
+						double curDistance = edge.getEdge().getWeight();
+						totalDistance += curDistance;
+						System.out.println("Edge number " + pathCounter + ": " + curDistance + " m.");
+					}
+					System.out.println("Total distance: " + totalDistance);
+				} else {
+					System.out.println("There is no way between the chosen vertices.");
 				}
-				System.out.println("Total distance: " + totalDistance);
+			} else {
+				System.out.println("Some of the vertices do not exist in the graph");
 			}
-			else {
-				System.out.println("There is no way between the chosen vertices.");
-			}
-			
 
 		} catch (Exception e) {
-			e.printStackTrace(); 
+			e.printStackTrace();
 		}
 	}
 
@@ -203,17 +216,5 @@ public class Main {
 			rv = WayType.ONE_WAY_REVERSED;
 		}
 		return rv;
-	}
-
-	public static void exportVerticesToFile(Graph graph, String filename) {
-		try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
-			for (Vertex v : graph.getAdjacencyLists().keySet()) {
-				writer.write(v.getLatitude() + ", " + v.getLongitude());
-				writer.newLine();
-			}
-			System.out.println("Arquivo '" + filename + "' criado com sucesso.");
-		} catch (IOException e) {
-			System.err.println("Erro ao escrever no arquivo: " + e.getMessage());
-		}
 	}
 }
