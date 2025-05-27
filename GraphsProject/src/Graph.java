@@ -92,6 +92,7 @@ public class Graph {
 							graph.addEdge(newNode.getVertex(), new GraphEdge(oldNode.getVertex(), edgeWeight));
 						}
 						oldNode = newNode;
+						edgeWeight = 0;
 					}
 					lastLat = newNode.getVertex().getLatitude();
 					lastLon = newNode.getVertex().getLongitude();

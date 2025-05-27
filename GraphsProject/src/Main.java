@@ -57,7 +57,7 @@ public class Main {
 				}
 			} else {
 				System.out.println("Some of the vertices do not exist in the graph");
-					}
+			}
 			
 //			ArrayList<Vertex> vertices = new ArrayList<>(graph.getAdjacencyLists().keySet());
 //			
