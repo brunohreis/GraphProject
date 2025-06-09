@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python/
+env/
+venv/
+.venv/
+
+# Poetry
+.poetry/
+.venv/
+poetry.lock
+
+# Project specific files
+project/dados.json
+project/mapas/
+project/cache/
+project/blob_storage/
+project/webrtc_event_logs/
+*.geojson
+project/rotas
+*.pdf
+
+# Environment variables file
+.env
