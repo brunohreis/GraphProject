@@ -67,7 +67,7 @@ class Graph:
         return None
 
     def _dijkstra(self, origin, destination):
-        # Inicialização (equivalente a 'Initialization' em Java)
+        # Inicialização
         dist = {v: float("inf") for v in self.adj_lists.keys()}
         pred = {v: None for v in self.adj_lists.keys()}
 
@@ -86,7 +86,7 @@ class Graph:
             to_be_added = None
             predecessor = None
 
-            # Itera sobre todos os vértices já explorados (equivalente a 'for(int i=0; i<exp.size(); i++)')
+            # Itera sobre todos os vértices já explorados
             for v_explored in explored:
                 if v_explored in self.adj_lists:
                     # Itera sobre os vizinhos do vértice explorado

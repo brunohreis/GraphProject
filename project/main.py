@@ -3,6 +3,9 @@ import subprocess
 import sys
 import csv
 
+# ATENÇÃO: Desabilitar o sandbox reduz a segurança.
+os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--no-sandbox"
+
 from PyQt5.QtCore import QFileInfo, pyqtSignal, QThread, Qt, QUrl
 from PyQt5.QtGui import QMovie
 from PyQt5.QtWebEngineWidgets import QWebEngineView
