@@ -3,12 +3,21 @@ import xml.etree.ElementTree as ET
 
 import folium
 import pandas as pd
+import os
+
+# Manipulação de diretórios para consertar erros de "Path not Found"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_PROJECT_PATH = os.path.dirname(SCRIPT_DIR)
+
+ROTAS_DIR = os.path.join(BASE_PROJECT_PATH, "rotas")
+MAPAS_DIR = os.path.join(BASE_PROJECT_PATH, "mapas")
 
 def createMap(ARQUIVO_CSV: str, nome_arquivo_saida: str):
     
+    csv_file_path = os.path.join(ROTAS_DIR, ARQUIVO_CSV)
     # --- 1. Carregar os dados da rota ---
     try:
-        df = pd.read_csv(f"project/rotas/{ARQUIVO_CSV}")
+        df = pd.read_csv(csv_file_path)
     except FileNotFoundError:
         return False
 
@@ -59,19 +68,27 @@ def createMap(ARQUIVO_CSV: str, nome_arquivo_saida: str):
     ).add_to(mapa)
 
     # --- 6. Salvar o resultado ---
+    output_map_path = os.path.join(MAPAS_DIR, nome_arquivo_saida)
     try:
-        mapa.save(f'project/mapas/{nome_arquivo_saida}')
+        os.makedirs(MAPAS_DIR, exist_ok=True) # Garante que a pasta de "mapas" existe
+        mapa.save(output_map_path)
         return True # Sinaliza sucesso
-    except Exception:
+    except Exception as e:
+        print(f"DEBUG: Error saving map to {output_map_path}: {e}")
         return False # Sinaliza falha
 
 # Lê um arquivo KML, extrai todas as coordenadas de todas as tags <coordinates>
 # e as salva em um arquivo CSV com as colunas 'latitude' e 'longitude'.
 def converter_kml_para_csv(arquivo_kml_entrada: str, arquivo_csv_saida: str):
+    kml_file_path = os.path.join(ROTAS_DIR, arquivo_kml_entrada)
+    csv_output_path = os.path.join(ROTAS_DIR, arquivo_csv_saida)
+
     try:
+        os.makedirs(ROTAS_DIR, exist_ok=True)
+
         # --- 1. Análise do Arquivo KML ---
         # Usamos um parser de XML para ler o arquivo KML de forma estruturada.
-        tree = ET.parse(f"project/rotas/{arquivo_kml_entrada}")
+        tree = ET.parse(kml_file_path)
         root = tree.getroot()
         
         # A sintaxe './/{*}coordinates' encontra a tag <coordinates> em qualquer lugar
@@ -105,7 +122,7 @@ def converter_kml_para_csv(arquivo_kml_entrada: str, arquivo_csv_saida: str):
         if not pontos_processados:
             return False
 
-        with open(f"project/rotas/{arquivo_csv_saida}", mode='w', newline='', encoding='utf-8') as f:
+        with open(csv_output_path, mode='w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
             
             # Escreve o cabeçalho (header) do CSV
